@@ -1,27 +1,27 @@
-# Key-Value Cache
+# Key-Value Cache Project
 
-A lightweight, high-performance, in-memory key-value store service with a clean HTTP API interface, implemented in Rust.
+A fast, lightweight, in-memory key-value store with a straightforward HTTP API, developed using Rust for high efficiency.
 
-## Installation
+## Setup
 
-### Prerequisites
-- Rust 1.70 or higher
-- Cargo (Rust's package manager)
+### Requirements
+- Rust version 1.70 or above
+- Cargo package manager
 
-### From Source
+### Building from Source
 ```bash
-# Clone the repository
-git clone https://github.com/Rushhaabhhh/Key-Value-Cache.git
-cd Key-Value-Cache
+# Download the repository
+git clone https://github.com/aannaannyaaa/KV-Cache-Project
+cd KV-Cache-Project
 
-# Build the binary
+# Compile the project
 cargo build --release
 
 # Run the server
 ./target/release/key_value_cache
 ```
 
-### Using Cargo
+### Install via Cargo
 ```bash
 # Install directly using cargo
 cargo install --git https://github.com/Rushhaabhhh/Key-Value-Cache.git
@@ -30,18 +30,18 @@ cargo install --git https://github.com/Rushhaabhhh/Key-Value-Cache.git
 key_value_cache
 ```
 
-### Using Docker
+### Running with Docker
 ```bash
 # Build the Docker image
 docker build -t key-value-cache .
 
-# Run the container
+# Run the Docker container
 docker run -p 7171:7171 key-value-cache
 ```
 
-## Configuration
+## Configuration Settings
 
-The application uses the following default values, which can be modified by creating a `.env` file in the project root:
+Default parameters can be adjusted by adding a `.env` file in the root directory:
 
 ```
 PORT=7171
@@ -49,35 +49,32 @@ MAX_KEY_SIZE=256
 MAX_VALUE_SIZE=256
 ```
 
-## API Usage
+## API Endpoints
 
 ### Store a Value
 ```
 POST /put
 ```
-
-Request body:
+Request body example:
 ```json
 {
   "key": "user:1234",
   "value": "John Doe"
 }
 ```
-
-Response:
+Success response:
 ```json
 {
   "status": "OK",
-  "message": "Key inserted/updated successfully."
+  "message": "Key successfully inserted or updated."
 }
 ```
 
-### Retrieve a Value
+### Retrieve Entry
 ```
 GET /get?key=user:1234
 ```
-
-Success Response:
+If found, response example:
 ```json
 {
   "status": "OK",
@@ -86,8 +83,7 @@ Success Response:
   "message": "Key retrieved successfully."
 }
 ```
-
-Key Not Found Response:
+If not found:
 ```json
 {
   "status": "ERROR",
@@ -95,70 +91,42 @@ Key Not Found Response:
 }
 ```
 
-## Design Choices and Optimizations
+## Architecture and Optimizations
 
-### Memory Efficiency
-- **LRU Cache Implementation**: Uses Rust's `LinkedHashMap` to efficiently track and remove the least recently used items when needed.
-- **Automatic Memory Management**: Continuously monitors system memory usage and proactively evicts items when reaching 70% of available memory.
-- **Progressive Eviction**: Implements a gradual eviction strategy that scales up batch sizes as needed, ensuring system responsiveness during cleanup operations.
+### Efficient Memory Handling
+- Employs an LRU cache using Rust's `LinkedHashMap` to track usage and evict the least recently used entries.
+- Monitors system memory continuously, triggering eviction when usage hits 70% capacity.
+- Uses a progressive eviction approach that increases eviction batch sizes gradually, preserving responsiveness.
 
-### Performance Enhancements
-- **Asynchronous Processing**: Built on Tokio's asynchronous runtime for efficient handling of concurrent requests without blocking.
-- **Thread-Safe Design**: Uses Rust's thread safety guarantees with `Arc<RwLock<>>` for safe concurrent access to the cache.
-- **Request Size Limits**: Enforces maximum key and value sizes to prevent abuse and ensure consistent performance.
+### Enhancing Performance
+- Built on Tokio's async runtime to handle multiple simultaneous requests efficiently.
+- Thread-safe through Rust’s `Arc<RwLock<>>` for concurrent cache operations.
+- Limits key and value sizes to maintain stable performance and prevent abuse.
 
-### Reliability Features
-- **Graceful Shutdown**: Implements proper shutdown handling to ensure no data is lost when the service is stopped.
-- **Error Handling**: Leverages Rust's robust error handling to provide clear and consistent error responses.
-- **Resource Monitoring**: Continuously adapts to changing workloads by monitoring and managing resource usage.
+### Increasing Reliability
+- Supports graceful termination to avoid data loss on shutdown.
+- Provides consistent and clear error responses through Rust’s error handling.
+- Monitors resources actively to adapt to workload changes dynamically.
 
 ### Scalability
-- **Horizontal Scaling**: Designed as a stateless service (except for the cache itself) for easy deployment behind a load balancer.
-- **Low Memory Footprint**: Optimized for efficient memory usage, allowing deployment in resource-constrained environments.
+- Designed as a stateless application (outside of cache data) to easily scale horizontally behind a load balancer.
+- Optimized for minimal memory usage, suited for deployment in environments with limited resources.
 
-## Performance
+## Performance Highlights
 
-The service is highly performant:
-- Handles 50,000+ requests per second on modest hardware
-- P95 response times under 5ms
-- Zero request failures under high concurrency (100+ simultaneous users)
+This service delivers exceptional speed:
+- Supports over 50,000 requests per second on typical hardware.
+- 95th percentile response times below 5 milliseconds.
+- Zero failing requests under heavy concurrent load (100+ users).
 
-### Load Test Results
+### Key Metrics:
 
-```
-█ THRESHOLDS 
-  http_req_duration
-  ✓ 'p(95)<500' p(95)=3.14ms
+- **Throughput:** 51,455 requests/second
+- **Latency:** 95% of requests completed in under 3.14ms
+- **Reliability:** No failures in nearly 17 million requests
+- **Cache Efficiency:** Achieved 100% effective cache hits with over 8 million hits
+- **Concurrency:** Maintained stability with 100 simultaneous virtual users
 
-█ TOTAL RESULTS 
-  checks_total.......................: 25468755 77177.190893/s
-  checks_succeeded...................: 100.00%  25468755 out of 25468755
-  checks_failed......................: 0.00%    0 out of 25468755
-  
-  CUSTOM
-  cache_hits..............................................................: 8488190  25721.503072/s
-  total_gets..............................................................: 8488190  25721.503072/s
-  
-  HTTP
-  http_req_duration.......................................................: avg=1.09ms min=50µs    med=753µs    max=168.3ms  p(90)=2.37ms p(95)=3.14ms
-  http_req_failed.........................................................: 0.00%    0 out of 16980565
-  http_reqs...............................................................: 16980565 51455.687821/s
-  
-  EXECUTION
-  iteration_duration......................................................: avg=1.3ms  min=79.04µs med=883.83µs max=168.38ms p(90)=2.81ms p(95)=3.76ms
-  iterations..............................................................: 16980565 51455.687821/s
-  vus.....................................................................: 2        min=1             max=100
-  vus_max.................................................................: 100      min=100           max=100
-  
-  NETWORK
-  data_received...........................................................: 3.4 GB   10 MB/s
-  data_sent...............................................................: 4.4 GB   14 MB/s
-```
+***
 
-### Key Performance Metrics:
-
-- **Request Throughput**: 51,455 requests per second
-- **Response Time**: 95% of responses under 3.14ms
-- **Perfect Reliability**: 0 failed requests out of nearly 17 million
-- **Cache Hit Rate**: 100% efficiency with 8.4+ million successful cache hits 
-- **Scalability**: Maintained performance with up to 100 virtual users
+Would you like the text adjusted to be more formal or casual?
